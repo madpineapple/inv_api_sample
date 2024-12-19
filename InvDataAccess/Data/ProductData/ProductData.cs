@@ -19,11 +19,12 @@ namespace InvDataAccess.Data
     }
     public Task<IEnumerable<ProductModel>> GetAllProductData()
     {
+      
       return _db.LoadData<ProductModel, dynamic>("GetAllProducts", new { });
     }
     public async Task<ProductModel?> GetProductById(int id)
     {
-      var results = await _db.LoadData<ProductModel, dynamic>("GetProductByID", new { int_id = id });
+      var results = await _db.LoadData<ProductModel, dynamic>("GetProductByID", new { ProdItemID = id });
       return results.FirstOrDefault();
     }
     public Task InsertProduct(ProductModel product) =>

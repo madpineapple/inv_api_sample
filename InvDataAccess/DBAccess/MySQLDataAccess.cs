@@ -14,6 +14,7 @@ namespace InvDataAccess.DBAccess
   public class MySQLDataAccess: IMySQLDataAccess
   {
     private readonly IConfiguration _config;
+
     public MySQLDataAccess(IConfiguration config)
     {
       _config = config;
@@ -39,5 +40,6 @@ namespace InvDataAccess.DBAccess
       await connection.ExecuteAsync(storedProcedure, parameters,
         commandType: CommandType.StoredProcedure);
     }
+
   }
 }

@@ -68,7 +68,7 @@ namespace inv_api_sample.Controllers
         return Results.Problem(ex.Message);
       }
     }
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<IResult> DeleteProduct(int id)
     {
       try
