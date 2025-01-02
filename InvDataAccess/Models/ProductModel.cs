@@ -13,6 +13,7 @@ namespace InvDataAccess.Models
    
     public int ProdItemID { get; set; }
     public string ProdItemName { get; set; } = string.Empty;
+    public string ProdItemNum {  get; set; } = string.Empty;
     public string ProdItemLotNum {  get; set; } = string.Empty;
     public string ProdVendorLotNum { get; set; } = string.Empty;
     public string ProdItemLoc { get; set; } = string.Empty;

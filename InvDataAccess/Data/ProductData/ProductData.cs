@@ -32,6 +32,7 @@ namespace InvDataAccess.Data
         product.ProdItemID,
         product.ProdItemName,
         product.ProdItemLoc,
+        product.ProdItemNum,
         product.ProdItemLotNum,
         product.ProdVendorLotNum,
         product.ProdExpDate,
