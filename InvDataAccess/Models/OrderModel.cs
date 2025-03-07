@@ -13,10 +13,11 @@ namespace InvDataAccess.Models
   {
     public int p_OrderID { get; set; }
     public int p_CustomerId { get; set; }
+    public string p_customerName { get; set; }
     public DateTime p_OrderDate { get; set; }
     public string p_OrderStatus { get; set; }
     public decimal p_Price { get; set; }
-    public List<OrderDetailsModel> OrderWithDetails { get; set; } = new ();
+    public List<OrderDTO> OrderWithDetails { get; set; } = new ();
     public string p_OrderDetailsJson => JsonSerializer.Serialize(OrderWithDetails);
   }
 }

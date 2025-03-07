@@ -9,8 +9,7 @@ namespace InvDataAccess.Data
 {
   public interface IOrderData
   {
-    Task<IEnumerable<OrderModel>> GetAllOrders();
+    Task<IEnumerable<OrderDTO>> GetAllOrders();
     Task CreateNewOrder(OrderModel order);
-    // Task DeleteOrder(int p_OrderId);
   }
 }
