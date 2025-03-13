@@ -15,15 +15,18 @@ namespace InvDataAccess.Models
     public string p_customerName { get; set; }
     public DateTime p_orderDate { get; set; }
     public string p_orderStatus { get; set; }
-    public List<OrderDetailDTO> OrderDetails { get; set; }
-}
-public class OrderDetailDTO
-{
-    public int p_orderDetailID { get; set; }
-    public int p_OrderID { get; set; }
-    public int p_product_id { get; set; }
-    public string p_product_name { get; set; }
-    public int p_quantity { get; set; }
+    public string p_m_productName { get; set; }
     public decimal p_price { get; set; }
+    public int p_quantity {get; set; }
+    // public List<OrderDetailDTO> OrderDetails { get; set; }
 }
+// public class OrderDetailDTO
+// {
+//     public int p_orderDetailID { get; set; }
+//     public int p_OrderID { get; set; }
+//     public int p_product_id { get; set; }
+//     public string p_product_name { get; set; }
+//     public int p_quantity { get; set; }
+//     public decimal p_price { get; set; }
+// }
 }

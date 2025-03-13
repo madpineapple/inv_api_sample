@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IProductData, ProductData>();
 builder.Services.AddSingleton<ICustomerData, CustomerData>();
 builder.Services.AddSingleton<IOrderData, OrderData>();
+builder.Services.AddScoped<IMaterialProductData, MaterialProductData>();
 
 
 builder.Services.AddSingleton<IMySQLDataAccess, MySQLDataAccess>();

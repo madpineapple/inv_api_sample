@@ -21,7 +21,7 @@ namespace InvDataAccess.Data
 
   public async Task<IEnumerable<OrderDTO>> GetAllOrders()
   {
-    var ordersAndDetails  = await _db.LoadData<dynamic, dynamic>("GetAllOrdersAndDetails", new { });
+    var ordersAndDetails  = await _db.LoadData<dynamic, dynamic>("GetAllOrdersWithCustomerNamesAndManufacturedProductNames", new { });
 
    var orders = ordersAndDetails
     .GroupBy(x => x.p_orderID) // Group by orderID to organize the details
@@ -31,15 +31,18 @@ namespace InvDataAccess.Data
         p_customerName = group.FirstOrDefault()?.p_customerName ?? "", // Handle null customerName
         p_orderDate = group.FirstOrDefault()?.p_orderDate ?? DateTime.MinValue, // Handle null orderDate
         p_orderStatus = group.FirstOrDefault()?.p_orderStatus ?? "", // Handle null orderStatus
-        OrderDetails = group.Select(details => new OrderDetailDTO
-        {
-            p_orderDetailID = details.p_orderDetailID ?? 0, // Handle null orderDetailID
-            p_OrderID = details.p_OrderID ?? 0, // Handle null p_OrderID
-            p_product_id = details.p_product_id ?? 0, // Handle null product_id
-            p_product_name = details.p_product_name ?? "", // Handle null product_name
-            p_quantity = details.p_quantity ?? 0, // Handle null quantity
-            p_price = details.p_price ?? 0m // Handle null price
-        }).ToList()
+        p_m_productName = group.FirstOrDefault()?.p_m_productName ?? "",
+        p_price = group.FirstOrDefault()?.p_price ?? 0,
+        p_quantity= group.FirstOrDefault()?.p_quantity ?? 0,
+        // OrderDetails = group.Select(details => new OrderDetailDTO
+        // {
+        //     p_orderDetailID = details.p_orderDetailID ?? 0, // Handle null orderDetailID
+        //     p_OrderID = details.p_OrderID ?? 0, // Handle null p_OrderID
+        //     p_product_id = details.p_product_id ?? 0, // Handle null product_id
+        //     p_product_name = details.p_product_name ?? "", // Handle null product_name
+        //     p_quantity = details.p_quantity ?? 0, // Handle null quantity
+        //     p_price = details.p_price ?? 0m // Handle null price
+        // }).ToList()
     }).ToList();
 
     return orders;
@@ -52,9 +55,9 @@ namespace InvDataAccess.Data
       order.p_OrderDate,
       order.p_OrderStatus,
       order.p_Price,
-      p_OrderDetailsJson = order.p_OrderDetailsJson,
+      order.p_m_productID,
+      order.p_quantity,
     });
-  
 
 }
 }
