@@ -12,6 +12,9 @@ builder.Services.AddSingleton<IProductData, ProductData>();
 builder.Services.AddSingleton<ICustomerData, CustomerData>();
 builder.Services.AddSingleton<IOrderData, OrderData>();
 builder.Services.AddScoped<IMaterialProductData, MaterialProductData>();
+builder.Services.AddScoped<IRecipeData, RecipeData>();
+builder.Services.AddHttpClient<LLMService>();
+
 
 
 builder.Services.AddSingleton<IMySQLDataAccess, MySQLDataAccess>();
