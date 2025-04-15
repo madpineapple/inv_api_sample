@@ -29,5 +29,8 @@ namespace InvDataAccess.Data
       var results = await _db.LoadData<RecipeModel, dynamic>("GetIngredientListByMProductID", new { m_customerID = id });
       return results;
   }
+
+  public Task UpdateRecipe(RecipeModel recipe) => _db.SaveData("UpdateMProductAndRecipe", recipe);
+  
   }
 }

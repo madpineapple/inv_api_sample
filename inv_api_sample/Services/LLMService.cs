@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 public class LLMService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _llmApiUrl = ""; // Change to match your LLM API
+    private readonly string _llmApiUrl = "http://192.168.0.195:8000/generate?prompt="; // Change to match your LLM API
 
     public LLMService(HttpClient httpClient)
     {

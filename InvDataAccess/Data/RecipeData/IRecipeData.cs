@@ -7,5 +7,7 @@ namespace InvDataAccess.Data
   {
      Task CreateNewRecipeAsync(RecipeModel recipe);
      Task<IEnumerable<RecipeModel>> GetRecipeDetailsByID(int id);
+     Task UpdateRecipe(RecipeModel recipe);
+
   }
 }

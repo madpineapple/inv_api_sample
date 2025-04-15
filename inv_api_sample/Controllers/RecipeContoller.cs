@@ -48,5 +48,18 @@ namespace inv_api_sample.Controllers
         return Results.Problem(ex.Message);
       }
     }
+        [HttpPut]
+    public async Task<IResult> UpdateRecipe(RecipeModel recipe)
+    {
+      try
+      {
+        await _recipeData.UpdateRecipe(recipe);
+        return Results.Ok(recipe);
+      }
+      catch (Exception ex)
+      {
+        return Results.Problem(ex.Message);
+      }
+    }
     }
 }
