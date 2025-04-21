@@ -13,6 +13,9 @@ builder.Services.AddSingleton<ICustomerData, CustomerData>();
 builder.Services.AddSingleton<IOrderData, OrderData>();
 builder.Services.AddScoped<IMaterialProductData, MaterialProductData>();
 builder.Services.AddScoped<IRecipeData, RecipeData>();
+builder.Services.AddScoped<IIngredientCheck, IngredientCheck>();
+builder.Services.AddScoped<IRecipeIngredients, RecipeIngredients>();
+
 builder.Services.AddHttpClient<LLMService>();
 
 

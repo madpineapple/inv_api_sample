@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using InvDataAccess.Models;
+
 namespace inv_api_sample.Controllers
 {
   [ApiController]
@@ -61,5 +61,6 @@ namespace inv_api_sample.Controllers
         return Results.Problem(ex.Message);
       }
     }
-    }
+  
+  }
 }

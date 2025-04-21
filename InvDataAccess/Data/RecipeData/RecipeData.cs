@@ -1,3 +1,4 @@
+using System.Text.Json;
 using InvDataAccess.DBAccess;
 using InvDataAccess.Models;
 
@@ -32,5 +33,10 @@ namespace InvDataAccess.Data
 
   public Task UpdateRecipe(RecipeModel recipe) => _db.SaveData("UpdateMProductAndRecipe", recipe);
   
+  public async Task<RecipeModel?> CheckRecipe(string recipe){
+    var results = await _db.LoadData<RecipeModel, dynamic >(" checkIngredientLevel", new{p_productName= recipe}) ;
+    return results.FirstOrDefault();
+  }
+
   }
 }
