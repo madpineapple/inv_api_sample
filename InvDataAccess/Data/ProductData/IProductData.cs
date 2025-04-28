@@ -14,5 +14,6 @@ namespace InvDataAccess.Data
     Task InsertProduct(ProductModel product);
     Task UpdateProduct(ProductModel product);
     Task<ProductModel?> GetProductById(int item_int);
+    Task<List<ProductModel?>> GetProductQuantity(string product_name);
   }
 }

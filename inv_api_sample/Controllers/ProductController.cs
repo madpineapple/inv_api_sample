@@ -42,6 +42,19 @@ namespace inv_api_sample.Controllers
         return Results.Problem(ex.Message);
       }
     }
+        [HttpGet("info/{product_name}")]
+    public async Task<IResult> GetProductQuantity(string product_name)
+    {
+      try
+      {
+        var products = await _productData.GetProductQuantity(product_name);
+        return Results.Ok(products);
+      }
+      catch (Exception ex)
+      {
+        return Results.Problem(ex.Message);
+      }
+    }
     [HttpPost]
     public async Task<IResult> InsertProduct(ProductModel product)
     {

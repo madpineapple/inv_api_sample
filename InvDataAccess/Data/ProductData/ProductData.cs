@@ -44,5 +44,9 @@ namespace InvDataAccess.Data
 
     public Task DeleteProduct(int id) => _db.SaveData("DeleteProduct", new { ProdItemID = id });
       
+      public async Task<List<ProductModel?>> GetProductQuantity(string product_name) {
+       var result = await _db.LoadData<ProductModel?, dynamic>("get_product_quantity_by_name", new { p_product_name = product_name });
+        return result.ToList();
+      }
   }
 }

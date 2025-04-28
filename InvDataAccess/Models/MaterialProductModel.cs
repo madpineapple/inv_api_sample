@@ -7,5 +7,6 @@ namespace InvDataAccess.Models
     public int m_customerID{get;set;}
     public string ?sku{get;set;}
     public DateTime created_at{get;set;}
+    public float? m_price{get;set;}
   }
 }
