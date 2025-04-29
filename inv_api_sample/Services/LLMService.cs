@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 public class LLMService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _llmApiUrl = "http://192.168.0.195:11434/api/generate"; 
+    private readonly string _llmApiUrl = "http:/api/generate"; 
     private readonly string _systemPrompt =
      @"You are a helpful,
      respectful, and honest warehouse assistant. Provide accurate, concise, and polite answers. 
