@@ -8,13 +8,24 @@ using Newtonsoft.Json;
 public class LLMService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _llmApiUrl = "http:/api/generate"; 
+    private readonly string _llmApiUrl = "<api>>"; 
     private readonly string _systemPrompt =
-     @"You are a helpful,
-     respectful, and honest warehouse assistant. Provide accurate, concise, and polite answers. 
-     If you don’t know the answer, say so and suggest where to find more information.";
+     @"You are Sam, a helpful warehouse assistant.Provide accurate, concise, and polite answers.
+     Here are some examples of questions you might expect:
+     User: How much rm0000194 is in stock?
+        Intent: call_api
+        Function: get_stock(rm0000194)
+
+        User: What time is it in Tokyo?
+        Intent: chit_chat
+        Function: none
+
+        User: How much rm0000194.000 are left?
+        Intent: call_api
+        Function: get_stock(rm0000194)";
      private readonly List<(string Role, string Content)> _chatHistory;
-private readonly string _inventoryApiUrl = "<api url>"; // Update as needed
+     
+private readonly string _inventoryApiUrl = "<api>"; // Update as needed
 
     public LLMService(HttpClient httpClient)
     {
@@ -26,12 +37,11 @@ private readonly string _inventoryApiUrl = "<api url>"; // Update as needed
     {
       var inventoryPatterns = new List<Regex>
     {
-        new Regex(@"(?i)how\s+much\s+([a-z\s]+)\s+(is\s+in\s+stock|do\s+we\s+have|is\s+available|are\s+there|is\s+left)\?", RegexOptions.IgnoreCase),
-        new Regex(@"(?i)how\s+many\s+([a-z\s]+)\s+(do\s+we\s+have|are\s+there|is\s+in\s+stock)\?", RegexOptions.IgnoreCase),
-        new Regex(@"(?i)what\s+(is|are)\s+the\s+stock\s+of\s+([a-z\s]+)\?", RegexOptions.IgnoreCase),
-        new Regex(@"(?i)how\s+many\s+units\s+of\s+([a-z\s]+)\s+do\s+we\s+have\?", RegexOptions.IgnoreCase)
+        new Regex(@"(?i)how\s+much\s+([a-z0-9\s]+)\s+(is\s+in\s+stock|do\s+we\s+have|is\s+available|are\s+there|is\s+left)\?", RegexOptions.IgnoreCase),
+        new Regex(@"(?i)how\s+many\s+([a-z0-9\s]+)\s+(do\s+we\s+have|are\s+there|is\s+in\s+stock)\?", RegexOptions.IgnoreCase),
+        new Regex(@"(?i)what\s+(is|are)\s+the\s+stock\s+of\s+([a-z0-9\s]+)\?", RegexOptions.IgnoreCase),
+        new Regex(@"(?i)how\s+many\s+units\s+of\s+([a-z0-9\s]+)\s+do\s+we\s+have\?", RegexOptions.IgnoreCase)
     };
-
     foreach (var pattern in inventoryPatterns)
     {
         var match = pattern.Match(inputText);
@@ -40,20 +50,31 @@ private readonly string _inventoryApiUrl = "<api url>"; // Update as needed
             string itemName = match.Groups[1].Value.Trim();
             try
             {
+                    Console.WriteLine(itemName);
+
             // Call inventory API
             HttpResponseMessage response = await _httpClient.GetAsync($"{ _inventoryApiUrl }/{Uri.EscapeDataString(itemName)}");
             if (response.IsSuccessStatusCode)
             {
+                Console.WriteLine("response: ", response);
                 var inventoryData = JsonConvert.DeserializeObject<List<ProductModel>>(await response.Content.ReadAsStringAsync());
                  // If there's more than one item, summarize the total quantity
                 float totalQuantity = inventoryData.Sum(item => item.ProdQuantity);
 
-                string result = $"We have {totalQuantity} units of {itemName}. Here are the details:\n";
+                 var sb = new StringBuilder();
+                sb.AppendLine( $"We have {totalQuantity} units of {itemName}. Here are the details:\n");
+                sb.AppendLine();
+                sb.AppendLine( string.Format($"{"#",-3} {"Item",-30}{"QTY",-10}{"Location",15}", "#"));
+                sb.AppendLine(new string('-', 80));
+
+                int index = 1;
                 foreach (var item in inventoryData)
                 {
-                    result += $"{item.ProdItemName} - {item.ProdQuantity} units at {item.ProdItemLoc}\n";
+                 sb.AppendLine($"{index,-3} {item.ProdItemName,-40} {item.ProdQuantity,-5} {item.ProdItemLoc}");
+                 index++;
                 }
-                
+                    string result = sb.ToString();
+
                 // Add to chat history
                 _chatHistory.Add(("user", inputText));
                 _chatHistory.Add(("assistant", result));
