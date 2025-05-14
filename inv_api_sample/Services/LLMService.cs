@@ -1,161 +1,101 @@
-using System;
-using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
+
 
 public class LLMService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _llmApiUrl = "<api>>"; 
-    private readonly string _systemPrompt =
-     @"You are Sam, a helpful warehouse assistant.Provide accurate, concise, and polite answers.
-     Here are some examples of questions you might expect:
-     User: How much rm0000194 is in stock?
-        Intent: call_api
-        Function: get_stock(rm0000194)
 
-        User: What time is it in Tokyo?
-        Intent: chit_chat
-        Function: none
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string _localApiUrl = "http://localhost:8000/parse-intent"; // Replace with your FastAPI endpoint
 
-        User: How much rm0000194.000 are left?
-        Intent: call_api
-        Function: get_stock(rm0000194)";
-     private readonly List<(string Role, string Content)> _chatHistory;
-     
-private readonly string _inventoryApiUrl = "<api>"; // Update as needed
+    private readonly string _inventoryApiUrl ="http://localhost:5230/Product/info";
 
-    public LLMService(HttpClient httpClient)
+    public class OuterResponse
+{
+    public string? Response { get; set; }
+}
+
+public class IntentPayload
+{
+    public string? Intent { get; set; }
+    public string? Item { get; set; }
+}
+
+    public LLMService(IHttpClientFactory httpClientFactory, HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _chatHistory = new List<(string Role,string Content)>();   
+        _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<string> GetModelResponse(string inputText)
+ public async Task<string> HandleUserRequest(string userInput)
+{
+    string aiResponse = await QueryLocalApiAsync(userInput);
+    ParsedIntent intentData;
+    
+    try
     {
-      var inventoryPatterns = new List<Regex>
+        intentData =  JsonConvert.DeserializeObject<ParsedIntent>(aiResponse);
+    }
+     catch (JsonException ex)
     {
-        new Regex(@"(?i)how\s+much\s+([a-z0-9\s]+)\s+(is\s+in\s+stock|do\s+we\s+have|is\s+available|are\s+there|is\s+left)\?", RegexOptions.IgnoreCase),
-        new Regex(@"(?i)how\s+many\s+([a-z0-9\s]+)\s+(do\s+we\s+have|are\s+there|is\s+in\s+stock)\?", RegexOptions.IgnoreCase),
-        new Regex(@"(?i)what\s+(is|are)\s+the\s+stock\s+of\s+([a-z0-9\s]+)\?", RegexOptions.IgnoreCase),
-        new Regex(@"(?i)how\s+many\s+units\s+of\s+([a-z0-9\s]+)\s+do\s+we\s+have\?", RegexOptions.IgnoreCase)
-    };
-    foreach (var pattern in inventoryPatterns)
-    {
-        var match = pattern.Match(inputText);
-        if (match.Success)
-        {
-            string itemName = match.Groups[1].Value.Trim();
-            try
-            {
-                    Console.WriteLine(itemName);
+        return $"Tiny returned invalid JSON: {ex.Message}";
+    }
+if (intentData == null || string.IsNullOrWhiteSpace(intentData.Intent))
+        return "Tiny didn't return a valid intent.";
 
-            // Call inventory API
-            HttpResponseMessage response = await _httpClient.GetAsync($"{ _inventoryApiUrl }/{Uri.EscapeDataString(itemName)}");
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("response: ", response);
-                var inventoryData = JsonConvert.DeserializeObject<List<ProductModel>>(await response.Content.ReadAsStringAsync());
+    var intent = intentData.Intent;
+    var item = intentData.Item;
+
+    if (intent == "read_item" && !string.IsNullOrWhiteSpace(item))
+    {
+        var stockData = await GetStockDataAsync(item);
+        return stockData;
+    }
+
+    return "I'm sorry, I couldn't understand your request.";
+}
+       // Step 1: Call your local API for TinyLlama's response
+    private async Task<string> QueryLocalApiAsync(string userInput)
+    {
+        var httpClient = _httpClientFactory.CreateClient();
+        var requestBody = new
+        {
+            prompt = userInput,
+            max_new_tokens = 100 // You can adjust the parameters if needed
+        };
+
+        var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
+
+        var response = await httpClient.PostAsync(_localApiUrl, content);
+
+        if (!response.IsSuccessStatusCode)
+            throw new Exception($"Error calling local API: {response.StatusCode}");
+
+        return await response.Content.ReadAsStringAsync();
+    }
+ private async Task<string> GetStockDataAsync(string itemName)
+ {
+    try
+    {
+        HttpResponseMessage response = await _httpClient.GetAsync($"{ _inventoryApiUrl }/{Uri.EscapeDataString(itemName)}");
+         if(response.IsSuccessStatusCode)
+         {
+            var inventoryData = JsonConvert.DeserializeObject<List<ProductModel>>(await response.Content.ReadAsStringAsync());
                  // If there's more than one item, summarize the total quantity
                 float totalQuantity = inventoryData.Sum(item => item.ProdQuantity);
 
-                 var sb = new StringBuilder();
-                sb.AppendLine( $"We have {totalQuantity} units of {itemName}. Here are the details:\n");
-                sb.AppendLine();
-                sb.AppendLine( string.Format($"{"#",-3} {"Item",-30}{"QTY",-10}{"Location",15}", "#"));
-                sb.AppendLine(new string('-', 80));
-
-                int index = 1;
+                string result = $"We have {totalQuantity} units of {itemName}. Here are the details:\n";
                 foreach (var item in inventoryData)
                 {
-                 sb.AppendLine($"{index,-3} {item.ProdItemName,-40} {item.ProdQuantity,-5} {item.ProdItemLoc}");
-                 index++;
+                    result += $"{item.ProdItemName} - {item.ProdQuantity} units at {item.ProdItemLoc}\n";
                 }
-                    string result = sb.ToString();
-
+                
                 // Add to chat history
-                _chatHistory.Add(("user", inputText));
-                _chatHistory.Add(("assistant", result));
+                // _chatHistory.Add(("user", inputText));
+                // _chatHistory.Add(("assistant", result));
                 
                 return result;
-            }
-            else
-            {
-                string error = "Sorry, I couldn’t find the item quantity. Please try again.";
-                _chatHistory.Add(("user", inputText));
-                _chatHistory.Add(("assistant", error));
-                return error;
-            }
-            }
-             catch (Exception ex)
-                {
-                    string error = $"Error accessing inventory: {ex.Message}";
-                    _chatHistory.Add(("user", inputText));
-                    _chatHistory.Add(("assistant", error));
-                    return error;
-                }
-        }
-    }
-
-        // Add user input to chat history
-        _chatHistory.Add(("user", inputText));
-
-        // Build the prompt using the chat template
-        var promptBuilder = new StringBuilder();
-        
-        // Add system prompt
-        promptBuilder.AppendLine($"<|im_start|>system");
-        promptBuilder.AppendLine(_systemPrompt);
-        promptBuilder.AppendLine($"<|im_end|>");
-
-        // Add chat history (limited to last few messages to avoid token limits)
-        int maxHistory = 4; // Adjust based on context length (e.g., 2048 tokens)
-        int startIndex = Math.Max(0, _chatHistory.Count - maxHistory);
-        for (int i = startIndex; i < _chatHistory.Count; i++)
-        {
-            var (role, content) = _chatHistory[i];
-            promptBuilder.AppendLine($"<|im_start|>{role}");
-            promptBuilder.AppendLine(content);
-            promptBuilder.AppendLine($"<|im_end|>");
-        }
-
-        // Add assistant role start
-        promptBuilder.AppendLine($"<|im_start|>assistant");
-
-        string fullPrompt = promptBuilder.ToString();
-
-        // Create request body
-        var requestBody = new { model = "tinyllama:latest", prompt = fullPrompt };
-        var jsonContent = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-
-       try
-       {
-        HttpResponseMessage response = await _httpClient.PostAsync(_llmApiUrl, jsonContent);
-    
-        if(response.IsSuccessStatusCode)
-         {
-            var rawJson = await response.Content.ReadAsStringAsync();
-         
-              var resultBuilder = new StringBuilder();
-            foreach (string line in rawJson.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-            {
-                try
-                {
-                    var lineJson = JsonConvert.DeserializeObject<dynamic>(line);
-                    resultBuilder.Append(lineJson.response.ToString());
-                }
-                catch (JsonReaderException)
-                {
-                    // Ignore malformed lines
-                }
-            }
-       string finalResponse = resultBuilder.ToString();
-
-                // Add assistant response to chat history
-                _chatHistory.Add(("assistant", finalResponse));
-            return resultBuilder.ToString();
          }
            else
             {
@@ -165,12 +105,14 @@ private readonly string _inventoryApiUrl = "<api>"; // Update as needed
                 Console.WriteLine($"Error Details: {errorContent}");
                 return null;
             }
-       }
-       catch (Exception ex)
+    }
+    catch (Exception ex)
        { 
         Console.WriteLine(ex.Message);
         return null;
        }
-               
-    }
+
+ }
+
+
 }

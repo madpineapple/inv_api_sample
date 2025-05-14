@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-
+namespace inv_api_sample.Controllers
+{
 [ApiController]
 [Route("api/llm")]
-public class LLMController : ControllerBase
+public class LLMController : Controller
 {
     private readonly LLMService _llmService;
 
@@ -15,12 +15,14 @@ public class LLMController : ControllerBase
     [HttpPost("generate")]
     public async Task<IActionResult> GenerateResponse([FromBody] LLMRequest request)
     {
-        var response = await _llmService.GetModelResponse(request.Text);
+        var response = await _llmService.HandleUserRequest(request.Text);
         return Ok(new { response });
     }
 }
 
 public class LLMRequest
 {
-    public string Text { get; set; }
+    public required string Text { get; set; }
+}
+
 }
