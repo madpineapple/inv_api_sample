@@ -14,6 +14,12 @@ namespace InvDataAccess.Data
     Task InsertProduct(ProductModel product);
     Task UpdateProduct(ProductModel product);
     Task<ProductModel?> GetProductById(int item_int);
-    Task<List<ProductModel?>> GetProductQuantity(string product_name);
+    Task<List<ItemTotalDTO>> GetProductQuantity(string product_name);
+    Task<List<ProductModel?>> GetProductInfo(string product_name);
+    Task<List<ProductModel?>> GetProductExpiry(string product_name, string expiry_info, string ? p_cutoff);
+    Task<List<ProductModel?>> GetProductByLot(string product_name, string product_lot_number);
+
+    Task<List<ProductModel?>> GetProductByLocation(string product_name, string product_location);
+
   }
 }

@@ -43,11 +43,63 @@ namespace inv_api_sample.Controllers
       }
     }
         [HttpGet("info/{product_name}")]
+    public async Task<IResult> GetProductInfo(string product_name)
+    {
+      try
+      {
+        var products = await _productData.GetProductInfo(product_name);
+        return Results.Ok(products);
+      }
+      catch (Exception ex)
+      {
+        return Results.Problem(ex.Message);
+      }
+    }
+        [HttpGet("countinfo/{product_name}")]
     public async Task<IResult> GetProductQuantity(string product_name)
     {
       try
       {
         var products = await _productData.GetProductQuantity(product_name);
+        return Results.Ok(products);
+      }
+      catch (Exception ex)
+      {
+        return Results.Problem(ex.Message);
+      }
+    }
+    [HttpGet("expiryInfo/{product_name}")]
+    public async Task<IResult> GetProductExpiry(string product_name, string expiry_info, string? p_cutoff)
+    {
+      try
+      {
+        var products = await _productData.GetProductExpiry(product_name, expiry_info, p_cutoff);
+        return Results.Ok(products);
+      }
+      catch (Exception ex)
+      {
+        return Results.Problem(ex.Message);
+      }
+    }
+        [HttpGet("lotInfo/{product_name}")]
+    public async Task<IResult> GetProductByLot(string product_name, string product_lot_number)
+    {
+      try
+      {
+        var products = await _productData.GetProductByLot(product_name, product_lot_number);
+        return Results.Ok(products);
+      }
+      catch (Exception ex)
+      {
+        return Results.Problem(ex.Message);
+      }
+    }
+         [HttpGet("locationInfo/{product_name}")]
+    public async Task<IResult> GetProductByLocation(string product_name, string product_location)
+    {
+      try
+      {
+        var products = await _productData.GetProductByLocation(product_name, product_location);
         return Results.Ok(products);
       }
       catch (Exception ex)

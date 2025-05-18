@@ -1,4 +1,3 @@
-using InvDataAccess.Data;
 using InvDataAccess.DBAccess;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +14,6 @@ builder.Services.AddScoped<IMaterialProductData, MaterialProductData>();
 builder.Services.AddScoped<IRecipeData, RecipeData>();
 builder.Services.AddScoped<IIngredientCheck, IngredientCheck>();
 builder.Services.AddScoped<IRecipeIngredients, RecipeIngredients>();
-builder.Services.AddScoped<LLMService>();
-builder.Services.AddScoped<HuggingFaceService>();
 builder.Services.AddHttpClient();
 
 
